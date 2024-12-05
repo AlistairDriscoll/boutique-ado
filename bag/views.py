@@ -19,7 +19,6 @@ def add_to_bag(request, item_id):
     size = None
     if 'product_size' in request.POST:
         size = request.POST['product_size']
-        print(size)
 
     bag = request.session.get('bag', {})
 
@@ -44,7 +43,6 @@ def add_to_bag(request, item_id):
 
 
     request.session['bag'] = bag
-    print(request.session['bag'])
     return redirect(redirect_url)
 
 
@@ -75,7 +73,6 @@ def adjust_bag(request, item_id):
             messages.success(request, f'Removed {product.name} from your bag')
 
     request.session['bag'] = bag
-    print(request.session['bag'])
     return redirect(reverse('view_bag'))
 
 

@@ -119,7 +119,7 @@
                     </span>
                     <span class="font-weight-bold">Adjust bag</span>
                 </a>
-                <button class="btn btn-black rounded-0" id="submit-button">
+                <button type="submit" class="btn btn-black rounded-0" id="submit-button">
                     <span class="font-weight-bold">Complete order</span>
                     <span class="icon">
                         <i class="fas fa-lock"></i>
@@ -136,12 +136,18 @@
     </div>
 </div>
 </div>
-
+<div id="loading-overlay">
+    <h3 class="text-light logo-font loading-spinner">
+        <span class="icon">
+            <i class="fas fa-3x fa-sync-alt fa-spin"></i>
+        </span>
+    </h3>
+</div>
 {% endblock %}
 
 {% block postloadjs %}
-{{ block.super }}
-{{ stripe_public_key|json_script:"id_stripe_public_key" }}
-{{ client_secret|json_script:"id_client_secret" }}
-<script src="{% static 'checkout/js/stripe_elements.js' %}"></script>
+    {{ block.super }}
+    {{ stripe_public_key|json_script:"id_stripe_public_key" }}
+    {{ client_secret|json_script:"id_client_secret" }}
+    <script src="{% static 'checkout/js/stripe_elements.js' %}"></script>
 {% endblock %}
