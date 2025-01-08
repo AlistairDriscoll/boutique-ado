@@ -16,6 +16,10 @@ def profile(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Profile updated successfully')
+        else:
+            messages.error(request, 'Failed to add product, please ensure the form is valid.')
+    else:
+        form = ProductForm(instance=profile)
 
     orders = profile.orders.all()
     form = UserProfileForm(instance=profile)
