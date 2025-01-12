@@ -1,12 +1,12 @@
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.db.models.functions import Lower
 
 from .forms import ProductForm
 from .models import Product, Category
 
-# Create your views here.
 
 def all_products(request):
     """ A view to show all products, including searching and sorting """
@@ -72,8 +72,13 @@ def product_detail(request, product_id):
     return render(request, 'products/product_detail.html', context)
 
 
+@login_required
 def add_product(request):
     """ Add a product to the store """
+
+    if not request.user.is_superuser:
+        messages.error(request, 'Sorry, but only store owners can do that.')
+        return redirect(reverse('home'))
 
     if request.method == "POST":
         # request.FILES to pass through any file data such as an image if the user has submitted one
@@ -97,8 +102,13 @@ def add_product(request):
     return render(request, template, context)
 
 
+@login_required
 def edit_product(request, product_id):
     """ View to edit product """
+
+    if not request.user.is_superuser:
+        messages.error(request, 'Sorry, but only store owners can do that.')
+        return redirect(reverse('home'))
 
     product = get_object_or_404(Product, pk=product_id)
 
@@ -124,8 +134,13 @@ def edit_product(request, product_id):
     return render(request, template, context)
 
 
+@login_required
 def delete_product(request, product_id):
     """ View to delete products """
+
+    if not request.user.is_superuser:
+        messages.error(request, 'Sorry, but only store owners can do that.')
+        return redirect(reverse('home'))
 
     product = get_object_or_404(Product, pk=product_id)
     product.delete()
