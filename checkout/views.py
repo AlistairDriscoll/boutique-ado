@@ -52,11 +52,14 @@ def checkout(request):
             'street_address2': request.POST['street_address2'],
             'county': request.POST['county'],
         }
+
         order_form = OrderForm(form_data)
         if order_form.is_valid():
             order = order_form.save(commit=False)
             pid = request.POST.get('client_secret').split('_secret')[0]
             order.stripe_pid = pid
+            # converts the bag json file into a string so it can be saved into the database
+            # as original_bag is a text field model
             order.original_bag = json.dumps(bag)
             order.save()
             for item_id, item_data in bag.items():
@@ -86,9 +89,9 @@ def checkout(request):
                     )
                     order.delete()
                     return redirect(reverse('view_bag'))
-            
+
             request.session['save_info'] = 'save_info' in request.POST
-            return redirect(reverse('checkout_success', args = [order.order_number]))
+            return redirect(reverse('checkout_success', args=[order.order_number]))
         else:
             messages.error(request, 'There was an error with your form. \
                 Please double check your information.')
@@ -108,26 +111,21 @@ def checkout(request):
             currency = settings.STRIPE_CURRENCY,
         )
 
+        # Attempt to prefill the form with any info the user maintains in their profile
         if request.user.is_authenticated:
             try:
                 profile = UserProfile.objects.get(user=request.user)
-                initial_data = {
-                        'full_name': profile.user.get_full_name(),
-                        'email': profile.user.email,
-                        'phone_number': profile.default_phone_number,
-                        'country': profile.default_country,
-                        'postcode': profile.default_postcode,
-                        'town_or_city': profile.default_town_or_city,
-                        'street_address1': profile.default_street_address1,
-                        'street_address2': profile.default_street_address2,
-                        'county': profile.default_county,
-                    }
-
-                # Convert all values to strings
-                initial_data = {key: str(value).strip("(),'") for key, value in initial_data.items()}
-
-                order_form = OrderForm(initial=initial_data)
-
+                order_form = OrderForm(initial={
+                    'full_name': profile.user.get_full_name(),
+                    'email': profile.user.email,
+                    'phone_number': profile.default_phone_number,
+                    'country': profile.default_country,
+                    'postcode': profile.default_postcode,
+                    'town_or_city': profile.default_town_or_city,
+                    'street_address1': profile.default_street_address1,
+                    'street_address2': profile.default_street_address2,
+                    'county': profile.default_county,
+                })
             except UserProfile.DoesNotExist:
                 order_form = OrderForm()
         else:
@@ -137,7 +135,6 @@ def checkout(request):
             messages.warning(request, 'Stripe public key is missing, did you forget to set it in your environment?')
 
         template = 'checkout/checkout.html'
-        print(f"Default postcode: {profile.default_postcode} (Type: {type(profile.default_postcode)})")
 
         context = {
             'order_form': order_form,
@@ -172,9 +169,11 @@ def checkout_success(request, order_number):
                 'default_street_address2': order.street_address2,
                 'default_county': order.county,
             }
+
             user_profile_form = UserProfileForm(profile_data, instance=profile)
             if user_profile_form.is_valid():
                 user_profile_form.save()
+
 
     messages.success(request, f'Order successfully processed! \
         Your order number is {order_number}. A confirmation \
