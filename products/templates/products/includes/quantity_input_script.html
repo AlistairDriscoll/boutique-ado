@@ -9,6 +9,15 @@
         $(`#increment-qty_${itemId}`).prop('disabled', plusDisabled);
     }
 
+    // disable plus/minus buttons outside 1-99 range for mobile
+    function handleEnableDisableMob(itemId) {
+        var currentValue = parseInt($(`#mob_id_qty_${itemId}`).val());
+        var minusDisabled = currentValue < 2;
+        var plusDisabled = currentValue > 98;
+        $(`#mob-decrement-qty_${itemId}`).prop('disabled', minusDisabled);
+        $(`#increment-qty_${itemId}`).prop('disabled', plusDisabled);
+    }
+
     // ensure correct enabling/disabling of all inputs on page load
     var allQtyInputs = $('.qty_input');
     for (var i = 0; i < allQtyInputs.length; i++){
